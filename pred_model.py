@@ -5,10 +5,10 @@ class PredictUsage:
     def __init__(self) -> None:
         pass
 
-    def fit(self):
+    def fit(self, X_train: pd.DataFrame, y_train: np.array) -> None:
         pass
 
-    def predict(self):
+    def predict(self, X_test: pd.DataFrame) -> np.array:
         pass
 
     # Calculate MAPE

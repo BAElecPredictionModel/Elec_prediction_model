@@ -42,7 +42,8 @@ trainset_by_label = dp.clf_by_label(y_train, X_train, pattern_labels)
 models = []
 for data in trainset_by_label:
     y_train_, X_train_  = data.iloc[:, 0], data.iloc[:, 1:]
-    model = PredictUsage().fit(X_train_, y_train_)
+    model = PredictUsage()
+    model.fit(X_train_, y_train_)
     models.append(model)
 
 # Declare instance for pattern classfication
