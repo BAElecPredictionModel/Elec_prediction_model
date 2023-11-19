@@ -14,6 +14,7 @@ df = pd.concat(df_list).iloc[:,1:]
 
 # 시간 feature
 df.index = pd.to_datetime(df.Date + df.Time, format="%Y-%m-%d%H:%M")
+df.index.name = "Time"
 df = df.sort_index()
 df = df.drop(['Date', 'Time'], axis=1)
 
