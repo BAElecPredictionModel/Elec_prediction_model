@@ -15,7 +15,7 @@ dp.data
 # Dataset that Data augmentation is applied
 X_train, X_test, y_train, y_test = dp.data_augmentation(save=False)
 
-dp.view_figure(augmented_data, figure_type=0, save=True) -> 잠시 지움
+dp.view_figure(augmented_data, figure_type=0, save=True) 
 
 
 #################################################################################################
@@ -36,7 +36,7 @@ pattern_labels
 # Visualize pattern clusters (arr_umap can be used instead)
 df_pattern = pd.DataFrame(cp.arr_tsne, columns=['x', 'y'])
 df_pattern['label'] = pattern_labels
-dp.view_figure(df_pattern, figure_type=1, save=True) - > 잠시 지움
+dp.view_figure(df_pattern, figure_type=1, save=True) 
 
 # Classify patterns(train data) by label
 trainset_by_label = dp.clf_by_label(y_train, X_train, pattern_labels)
