@@ -3,12 +3,22 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import make_scorer, mean_squared_error
+import xgboost as xgb
+from sklearn.feature_selection import RFE
+
 from sklearn.model_selection import train_test_split
 
 class DataProc:
     def __init__(self):
         # Load preprocessed data
-        self.data = pd.read_csv('BA/preprocessed_data.csv').set_index('Time', drop=True)
+        self.data = pd.read_csv('data/preprocessed_data.csv', parse_dates=['Time']).set_index('Time', drop=True)
+        
+        #Hyperparameters
+        ##how many years are augmented? This is the hyperparameter
+        self.AugTimes = 4 #현재 하이퍼파라미터로는 1+4년치 생성
+        self.n_features = [10,20,30,40] #n_feature range for RFE
         
         # Pre-declare the variables for future functions
         self.augmented_data = None
@@ -16,34 +26,117 @@ class DataProc:
         
     # Data augmentation
     def data_augmentation(self, save=False) -> pd.DataFrame:
-        # Augment data
-        augmented_data = self.data
-        self.augmented_data = augmented_data
-        # 여기에 데이터 증강 구현
+        
+        #train_test split first
+        self.data_train = self.data.iloc[:365] #1년치 train으로
+        self.data_test = self.data.iloc[365:] #6개월치 train으로
+        print("self.data_train.shape: ",self.data_train.shape)
+        print("self.data_test.shape: ",self.data_test.shape)
+        
+        #augmentation for traninig data
+        Augmentations = [self.data_train]
+        for yearPush in range(1,self.AugTimes+1):
+            Augmentations.append(self.augmentation(self.data_train,yearPush))
 
-        # Save test data start point
-        self.pred_test_idx = 0 # 테스트 데이터 시작 인덱스 저장
-
+        data_train_augmented = pd.concat(Augmentations, axis=0)
+        print("data_train_augmented.shape: ",data_train_augmented.shape)
+        
+        #RFE
+        SelctedFeaturesSrt = self.RFE_featureSelection(data_train_augmented)
+        print("SelctedFeaturesSrt: ",SelctedFeaturesSrt)
+        
+        #X_train, X_test, y_train, y_test
+        X_trainVal = data_train_augmented.drop(["AveragePower"], axis=1)
+        X_trainVal = X_trainVal[SelctedFeaturesSrt]
+        y_trainVal = data_train_augmented["AveragePower"]
+        
+        X_test = self.data_test.drop(["AveragePower"], axis=1)
+        X_test = X_trainVal[SelctedFeaturesSrt]
+        y_test = self.data_test["AveragePower"]
+        
         # Save augmented data as csv
         if save:
-            augmented_data.to_csv('BA/results/augmented_data.csv')
+            augmented_data.to_csv('data/results/augmented_data.csv')
 
-        return augmented_data
+        return X_trainVal, X_test, y_trainVal, y_test
 
-    # Data split
-    def data_split(self, data: pd.DataFrame, phase, test_size=0.2):
-        X, y = data.iloc[:, 1:], data.iloc[:, 0]
-
-        # Phase: Split for electricity prediction
-        if phase == 'pred':
-            X_train, X_test = X.iloc[:self.pred_test_idx], X.iloc[self.pred_test_idx:]
-            y_train, y_test = y.iloc[:self.pred_test_idx], y.iloc[self.pred_test_idx:]
-            return X_train, X_test, y_train, y_test
+    def RFE_featureSelection(self,data_train_augmented):
         
-        # Phase: Split for electricity prediction
-        elif phase == 'clf':
-            return train_test_split(X, y, test_size=test_size, random_state=42)
+        # Assuming 'model' is your pre-defined estimator
+        model = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=100, learning_rate=0.1, max_depth=10)
         
+        # and 'X_train', 'y_train' are your training data and labels
+        X_train = data_train_augmented.drop(["AveragePower"], axis=1)
+        y_train = data_train_augmented["AveragePower"]
+
+        best_score = np.inf  # For MSE, lower is better, so start with infinity
+        best_rfe = None
+        
+        # Define the range for n_features_to_select
+        for n_features in self.n_features:
+            rfe = RFE(estimator=model, n_features_to_select=n_features)
+            rfe.fit(X_train, y_train)
+
+            # Using negative MSE because cross_val_score returns higher values as better and we want lower MSE
+            score = -cross_val_score(rfe, X_train, y_train, cv=2, scoring='neg_mean_squared_error').mean()
+            
+            if score < best_score:
+                best_score = score
+                optimal_features = n_features
+                best_rfe = rfe
+        
+        SelectedFeatures = best_rfe.ranking_==1
+        SelctedFeaturesSrt = list(X_train.columns[SelectedFeatures])
+        
+
+        return SelctedFeaturesSrt
+    
+    def augmentation(self,df,yearPush):
+        
+        augmented_df = df.loc['2022-3':'2023-02']
+
+        # Change the index by adding 1 year to each date
+        print(augmented_df.index)
+        augmented_df.index = augmented_df.index + pd.DateOffset(years=yearPush)
+
+        # Now, we will inject noise into the 'augmented_df' based on the mean and standard deviation from the 'df'
+        numerical_columns = ["AveragePower","rn","ss","icsr","dsnw","ws","hm","dc10Tca","dc10LmcsCa","vs","ts","wd_x","wd_y","power_yesterday","power_ema4","power_ema7","power_ema14"]
+
+        # Initialize a DataFrame to hold the noise for 'augmented_df'
+        noise_df = pd.DataFrame(0,index=augmented_df.index,columns= augmented_df.columns)
+
+        # Generate noise for each numerical feature based on the original 'df'
+        for column in numerical_columns:
+            # Calculate the mean and standard deviation of the column from the original 'df'
+            mean = df[column].mean()
+            std_dev = df[column].std()
+
+            # Generate noise with mean = 0 and std = std_dev of the feature for the length of the df
+            noise = np.random.normal(0, std_dev*0.2, size=augmented_df[column].shape)
+
+            # Assign the noise to the noise DataFrame
+            noise_df[column] = noise
+
+        # Add the generated noise to the 'augmented_df'
+        augmented_df = augmented_df + noise_df
+
+
+        #Augmentation for cloud form
+
+        cloudForm_columns_to_modify = ["ct_Ci","ct_Cc","ct_Cs","ct_Ac","ct_As","ct_Ns","ct_Sc","ct_St","ct_Cu","ct_Cb"]
+
+        # Apply the modification to the selected columns
+        for column in cloudForm_columns_to_modify:
+            # Generate random integers in the range [-2, 2] for each entry
+            noise = np.random.randint(-5, 5, df[column].shape)
+
+            # Add the noise to the column
+            df[column] += noise
+
+            # Replace negative values with 0
+            df[column] = df[column].clip(lower=0)
+        return augmented_df
+    
     # Visualization
     def view_figure(self, data: pd.DataFrame, figure_type, save=False):
 

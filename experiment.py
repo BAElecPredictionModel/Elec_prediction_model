@@ -10,12 +10,15 @@ from pred_model import PredictUsage
 dp = DataProc()
 dp.data
 
-# Data augmentation
-augmented_data = dp.data_augmentation(save=True)
-dp.view_figure(augmented_data, figure_type=0, save=True)
+#################################################################################################
 
-# Split data for electricity consumption prediction
-X_train, X_test, y_train, y_test = dp.data_split(augmented_data, phase='pred')
+# Dataset that Data augmentation is applied
+X_train, X_test, y_train, y_test = dp.data_augmentation(save=False)
+
+dp.view_figure(augmented_data, figure_type=0, save=True) -> 잠시 지움
+
+
+#################################################################################################
 
 # Declare instance for clustering
 cp = ClusterPattern(X_train)
@@ -33,7 +36,7 @@ pattern_labels
 # Visualize pattern clusters (arr_umap can be used instead)
 df_pattern = pd.DataFrame(cp.arr_tsne, columns=['x', 'y'])
 df_pattern['label'] = pattern_labels
-dp.view_figure(df_pattern, figure_type=1, save=True)
+dp.view_figure(df_pattern, figure_type=1, save=True) - > 잠시 지움
 
 # Classify patterns(train data) by label
 trainset_by_label = dp.clf_by_label(y_train, X_train, pattern_labels)
