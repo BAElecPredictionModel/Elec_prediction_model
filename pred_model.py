@@ -54,10 +54,9 @@ class PredictUsage:
                 mean_MAPE = mean_MAPE + np.mean(mape)
 
             scores.append((mean_MSE/self.n_splits, mean_MAE/self.n_splits, mean_R2/self.n_splits, mean_MAPE/self.n_splits))
-        
-        rownames.append(tup)
-        colnames = ['MSE',"MAE","R2","MAPE"]
+            rownames.append(tup)
 
+        colnames = ['MSE',"MAE","R2","MAPE"]
         df_summary = pd.DataFrame(scores, index=rownames, columns=colnames)
         opt_n_estimators,opt_max_depth,opt_learning_rate = df_summary['MAPE'].idxmin()
         

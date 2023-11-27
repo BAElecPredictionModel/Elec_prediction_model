@@ -1,14 +1,10 @@
 import pandas as pd
 import numpy as np
-import seaborn as sns
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import cross_val_score
-from sklearn.metrics import make_scorer, mean_squared_error
-import xgboost as xgb
 from sklearn.feature_selection import RFE
-
-from sklearn.model_selection import train_test_split
+import xgboost as xgb
 
 class DataProc:
     def __init__(self):
@@ -39,6 +35,7 @@ class DataProc:
             Augmentations.append(self.augmentation(self.data_train,yearPush))
 
         data_train_augmented = pd.concat(Augmentations, axis=0)
+        self.augmented_data = data_train_augmented
         print("data_train_augmented.shape: ",data_train_augmented.shape)
         
         #RFE
@@ -56,7 +53,7 @@ class DataProc:
         
         # Save augmented data as csv
         if save:
-            augmented_data.to_csv('data/results/augmented_data.csv')
+            self.augmented_data.to_csv('data/results/augmented_data.csv')
 
         return X_trainVal, X_test, y_trainVal, y_test
 
@@ -148,25 +145,36 @@ class DataProc:
             # Set the x-axis scale at 1-month intervals
             start_date = data.index[0]
             end_date = data.index[-1]
-            plt.xticks(pd.date_range(start=start_date, end=end_date, freq='MS'), rotation=45, ha='right')
+            plt.xticks(pd.date_range(start=start_date, end=end_date, freq='3MS'), rotation=45, ha='right', fontsize=8)
 
             # Save figure as png file
             if save:
                 plt.savefig(f'results/augmented_data.png', dpi=300, bbox_inches='tight')
-
-            plt.show()
+            else:
+                plt.show()
+            plt.clf()
 
         # Show pattern cluster
         elif figure_type == 1:
-            sns.scatterplot(x='x', y='y', hue='label', data=data, palette='Set2', legend='full')
+            # 데이터 프레임에서 각 label에 해당하는 데이터를 분리
+            unique_labels = data['label'].unique()
+
+            # 각 label에 대해 따로 scatter plot 그리기
+            for label in unique_labels:
+                subset = data[data['label'] == label]
+                plt.scatter(x=subset['x'], y=subset['y'], label=f'Cluster {label}')
+
+            # 그래프 세팅 및 표시
             plt.title('True Electricity Usage Patterns')
             plt.legend()
 
             # Save figure as png file
             if save:
                 plt.savefig('results/pattern_cluster.png', dpi=300, bbox_inches='tight')
+            else:
+                plt.show()
 
-            plt.show()
+            plt.clf()
         
         # Show prediction result
         elif figure_type == 2:
@@ -193,7 +201,7 @@ class DataProc:
     def clf_by_label(self, y, X, labels: pd.DataFrame):
         data_with_labels = pd.concat([labels, y, X], axis=1)
         data_by_label = []
-        for label in range(labels.max()):
+        for label in range(int(labels.max())):
             data = data_with_labels[data_with_labels.label == label]
             y = data.iloc[:, 1]
             X = data.iloc[:, 2:]

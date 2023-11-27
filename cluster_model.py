@@ -34,7 +34,7 @@ class ClusterPattern:
 
 
     # Clustering: Generate pattern labels
-    def clustering(self, data_arr: np.array, eps=1) -> pd.DataFrame:
+    def clustering(self, data_arr: np.array, eps=10) -> pd.DataFrame:
         labels = DBSCAN(eps=eps).fit_predict(data_arr)
         labels = pd.DataFrame(labels, index=self.timeIndex, columns=['label'])
         
