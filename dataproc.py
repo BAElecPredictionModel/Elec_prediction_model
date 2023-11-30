@@ -32,7 +32,8 @@ class DataProc:
         #augmentation for traninig data
         Augmentations = [self.data_train]
         for yearPush in range(1,self.AugTimes+1):
-            Augmentations.append(self.augmentation(self.data_train,yearPush))
+            #default: categoricalRandInt=False
+            Augmentations.append(self.augmentation(self.data_train,yearPush,categoricalRandInt=False))
 
         data_train_augmented = pd.concat(Augmentations, axis=0)
         self.augmented_data = data_train_augmented
@@ -88,7 +89,7 @@ class DataProc:
 
         return SelctedFeaturesSrt
     
-    def augmentation(self,df,yearPush):
+    def augmentation(self,df,yearPush,categoricalRandInt=True):
         
         augmented_df = df.loc['2022-3':'2023-02']
 
@@ -116,22 +117,37 @@ class DataProc:
 
         # Add the generated noise to the 'augmented_df'
         augmented_df = augmented_df + noise_df
+        
+        #Clipping target to remove minus value 
+        augmented_df["AveragePower"] = augmented_df["AveragePower"].clip(lower=0)
 
 
         #Augmentation for cloud form
 
         cloudForm_columns_to_modify = ["ct_Ci","ct_Cc","ct_Cs","ct_Ac","ct_As","ct_Ns","ct_Sc","ct_St","ct_Cu","ct_Cb"]
 
+        
         # Apply the modification to the selected columns
         for column in cloudForm_columns_to_modify:
-            # Generate random integers in the range [-2, 2] for each entry
-            noise = np.random.randint(-5, 5, df[column].shape)
-
+            # Generate random integers in the range [-1, 1] for each entry
+            
+            #Noise injection on categorical feature 1)Random Int 2)Float from normal dist
+            
+            #1)Random Int
+            if categoricalRandInt:
+                noise = np.random.randint(-1, 1, augmented_df[column].shape)
+            
+            #2)Float from normal dist
+            else:
+                std_dev = df[column].std()
+                noise = np.random.normal(0, std_dev*0.2, size=augmented_df[column].shape)
             # Add the noise to the column
-            df[column] += noise
+            augmented_df[column] += noise
 
             # Replace negative values with 0
-            df[column] = df[column].clip(lower=0)
+            augmented_df[column] = augmented_df[column].clip(lower=0)
+        
+            
         return augmented_df
     
     # Visualization

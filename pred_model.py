@@ -9,10 +9,10 @@ class PredictUsage:
         self.model = None
         
         #Hyperparameters to be searched
-        self.n_splits= 5
-        self.n_estimators_list=[100,200,300]
-        self.max_depths = [5,10,15,20,25,30]
-        self.learning_rates= [0.1,0.05,0.01]
+        self.n_splits= 2
+        self.n_estimators_list=[100]
+        self.max_depths = [5]
+        self.learning_rates= [0.1]
 
     def fit(self, X_trainVal: pd.DataFrame, y_trainVal: np.array) -> None:
         
