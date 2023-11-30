@@ -25,7 +25,7 @@ class DataProc:
         
         #train_test split first
         self.data_train = self.data.iloc[:365] #1년치 train으로
-        self.data_test = self.data.iloc[365:] #6개월치 train으로
+        self.data_test = self.data.iloc[365:] #6개월치 test으로
         print("self.data_train.shape: ",self.data_train.shape)
         print("self.data_test.shape: ",self.data_test.shape)
         
