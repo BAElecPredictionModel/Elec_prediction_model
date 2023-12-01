@@ -54,7 +54,7 @@ class ClassfyLabel:
         return
     
     # Predict
-    def predict(self, X) -> np.array:
+    def predict(self) -> np.array:
         model = self.clf_model
         
         # Predict pattern labels
