@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from sklearn.manifold import TSNE
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import DBSCAN, KMeans
 
 from umap import UMAP
 
@@ -35,7 +35,8 @@ class ClusterPattern:
 
     # Clustering: Generate pattern labels
     def clustering(self, data_arr: np.array, eps=10) -> pd.DataFrame:
-        labels = DBSCAN(eps=eps).fit_predict(data_arr)
+        # labels = DBSCAN(eps=eps).fit_predict(data_arr)
+        labels = KMeans(n_clusters=3).fit_predict(data_arr)
         labels = pd.DataFrame(labels, index=self.timeIndex, columns=['label'])
         
         self.labels = labels

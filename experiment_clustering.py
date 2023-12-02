@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy as np
+import pickle
 
 from dataproc import DataProc
 from cluster_model import ClusterPattern
@@ -11,9 +11,11 @@ dp = DataProc()
 dp.data
 
 # Dataset that Data augmentation is applied
-X_train, X_test, y_train, y_test = dp.data_augmentation(save=False)
-dp.view_figure(dp.augmented_data, figure_type=0, save=True) 
-dp.view_figure(dp.augmented_data, figure_type=0, save=False) 
+# X_train, X_test, y_train, y_test = dp.data_augmentation(save=True)
+with open('data/augmented_data.pickle', 'rb') as file:
+    X_train, X_test, y_train, y_test = pickle.load(file)
+# dp.view_figure(dp.augmented_data, figure_type=0, save=True) 
+# dp.view_figure(dp.augmented_data, figure_type=0, save=False) 
 
 # Declare instance for clustering
 cp = ClusterPattern(X_train)
@@ -26,7 +28,9 @@ data_arr
 
 # Clustering electricity usage patterns
 pattern_labels = cp.clustering(data_arr, eps=5)
-pattern_labels.value_counts()
+with open('results/pattern_labels.pickle', 'wb') as file:
+    pickle.dump(pattern_labels, file)
+print(pattern_labels.value_counts())
 
 # Visualize pattern clusters (arr_umap can be used instead)
 df_pattern = pd.DataFrame(cp.arr_tsne, columns=['x', 'y'])
@@ -98,7 +102,7 @@ pred_result
 
 # Calcuate error of entire prediction
 error = model.calculate_error(pred_result.true, pred_result.pred)
-error
+print(error)
 
 # Visualize prediction result
 dp.view_figure(pred_result, figure_type=2, save=True)

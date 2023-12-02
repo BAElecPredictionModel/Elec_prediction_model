@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 
 from sklearn.model_selection import cross_val_score
 from sklearn.feature_selection import RFE
@@ -55,7 +56,9 @@ class DataProc:
         
         # Save augmented data as csv
         if save:
-            self.augmented_data.to_csv('data/results/augmented_data.csv')
+            with open('data/augmented_data.pickle', 'wb') as file:
+                data = X_trainVal, X_test, y_trainVal, y_test
+                pickle.dump(data, file)
 
         return X_trainVal, X_test, y_trainVal, y_test
 
