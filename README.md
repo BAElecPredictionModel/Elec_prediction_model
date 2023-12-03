@@ -63,11 +63,11 @@ We utilize weather data to predict optimal electricity charging demand. This app
     - predict: Predicts labels, saves them as a pickle file, and returns them.
 
 ### Electricity Usage Prediction Model: pred_model.py
-- Overview:
+- Overview: Train the ML model, predict on test dataset and comfirm the performance by metrics
 - Usage: Import the PredictUsage class in the file.
 - Code Description:
-    - fit:
-    - predict:
+    - fit: Find the optimal hyper paramter with cross validation
+    - predict: Predict with the optimal hyperparameter on test dataset
     - calculate_error: Calculates MAE, RMSE, MAPE errors and returns them in a dictionary.
 
 ### Basic Model Experiment: experiment_basic.py
