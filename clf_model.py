@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pickle
 
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
@@ -59,6 +60,10 @@ class ClassfyLabel:
         
         # Predict pattern labels
         y_pred = model.predict(self.X_test)
+
+        # Save as pickle
+        with open('results/predicted_labels.pickle', 'wb') as file:
+            pickle.dump(y_pred, file)
 
         return y_pred
 

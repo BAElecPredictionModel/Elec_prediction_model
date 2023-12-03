@@ -13,6 +13,9 @@ class DataProc:
         # Load preprocessed data
         self.data = pd.read_csv('data/preprocessed_data.csv', parse_dates=['Time']).set_index('Time', drop=True)
         
+        # 사용량 결측 구간 제외
+        self.data = self.data.iloc[15:]
+        
         #Hyperparameters
         ##how many years are augmented? This is the hyperparameter
         self.AugTimes = 4 #현재 하이퍼파라미터로는 1+4년치 생성
@@ -65,7 +68,7 @@ class DataProc:
     def RFE_featureSelection(self,data_train_augmented):
         
         # Assuming 'model' is your pre-defined estimator
-        model = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=100, learning_rate=0.1, max_depth=10)
+        model = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=200, learning_rate=0.05, max_depth=5)
         
         # and 'X_train', 'y_train' are your training data and labels
         X_train = data_train_augmented.drop(["AveragePower"], axis=1)
@@ -89,7 +92,6 @@ class DataProc:
         
         SelectedFeatures = best_rfe.ranking_==1
         SelctedFeaturesSrt = list(X_train.columns[SelectedFeatures])
-        
 
         return SelctedFeaturesSrt
     

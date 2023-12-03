@@ -12,10 +12,10 @@ dp.data
 
 # Dataset that Data augmentation is applied
 # X_train, X_test, y_train, y_test = dp.data_augmentation(save=True)
-with open('data/augmented_data.pickle', 'rb') as file:
-    X_train, X_test, y_train, y_test = pickle.load(file)
 # dp.view_figure(dp.augmented_data, figure_type=0, save=True) 
 # dp.view_figure(dp.augmented_data, figure_type=0, save=False) 
+with open('data/augmented_data.pickle', 'rb') as file:
+    X_train, X_test, y_train, y_test = pickle.load(file)
 
 # Declare instance for clustering
 cp = ClusterPattern(X_train)
@@ -27,7 +27,7 @@ data_arr = cp.dim_reduction('tsne')
 data_arr
 
 # Clustering electricity usage patterns
-pattern_labels = cp.clustering(data_arr, eps=5)
+pattern_labels = cp.clustering(data_arr, eps=6)
 with open('results/pattern_labels.pickle', 'wb') as file:
     pickle.dump(pattern_labels, file)
 print(pattern_labels.value_counts())

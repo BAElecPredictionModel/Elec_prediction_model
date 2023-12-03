@@ -9,18 +9,17 @@ class PredictUsage:
     def __init__(self) -> None:
         self.model = None
         
-        #Hyperparameters to be searched
         self.n_splits= 2
-        self.n_estimators_list=[100]
-        self.max_depths = [5]
-        self.learning_rates= [0.1]
+        #Hyperparameters to be searched
+        self.n_estimators_list=[100, 200, 300]
+        self.max_depths = [3, 5, 10]
+        self.learning_rates= [0.1, 0.05, 0.01]
 
     def fit(self, X_trainVal: pd.DataFrame, y_trainVal: np.array) -> None:
         
         cv = KFold(n_splits = self.n_splits, shuffle =True, random_state = 42)
         scores = []
         rownames = []
-        
 
         hyperparamSetting = []
         for n_estimators in self.n_estimators_list:
@@ -59,10 +58,10 @@ class PredictUsage:
 
         colnames = ['MSE',"MAE","R2","MAPE"]
         df_summary = pd.DataFrame(scores, index=rownames, columns=colnames)
-        opt_n_estimators,opt_max_depth,opt_learning_rate = df_summary['MAPE'].idxmin()
+        opt_n_estimators,opt_max_depth,opt_learning_rate = df_summary['MAE'].idxmin()
         
         #MAPE를 기준으로 optimal hyperparameter 결정
-        print("opt_n_estimators,opt_max_depth,opt_learning_rate: ",df_summary['MAPE'].idxmin())
+        print("opt_n_estimators,opt_max_depth,opt_learning_rate: ",df_summary['MAE'].idxmin())
         
         self.model = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=opt_n_estimators, learning_rate=opt_learning_rate, max_depth=opt_max_depth)
         
