@@ -5,9 +5,8 @@ import pickle
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
-from sklearn.metrics import accuracy_score
 
-class ClassfyLabel:
+class ClassifyLabel:
     def __init__(self, input, setting=None):
         # Save input as class variables
         self.X_train_val, self.y_train_val, self.X_test = input

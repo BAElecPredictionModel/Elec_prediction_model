@@ -3,7 +3,7 @@ import pickle
 
 from dataproc import DataProc
 from cluster_model import ClusterPattern
-from clf_model import ClassfyLabel
+from clf_model import ClassifyLabel
 from pred_model import PredictUsage
 
 # Declare instance for data processing
@@ -51,7 +51,7 @@ train_patterns = patterns
 train_pattern_labels = pattern_labels
 test_patterns = X_test
 input = (train_patterns, train_pattern_labels, test_patterns)
-cl = ClassfyLabel(input)
+cl = ClassifyLabel(input)
 
 # Validate using 5-fold cross-validation
 fold_accuracy, mean_accuracy = cl.valdiation()

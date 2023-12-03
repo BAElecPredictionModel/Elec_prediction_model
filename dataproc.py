@@ -65,6 +65,7 @@ class DataProc:
 
         return X_trainVal, X_test, y_trainVal, y_test
 
+    # RFE Feature Selection
     def RFE_featureSelection(self,data_train_augmented):
         
         # Assuming 'model' is your pre-defined estimator

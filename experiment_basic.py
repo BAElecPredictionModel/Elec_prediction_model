@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pandas as pd
 import pickle
 
@@ -31,3 +32,5 @@ print(error)
 
 # Visualize prediction result
 dp.view_figure(pred_result, figure_type=2, save=True)
+
+
