@@ -8,23 +8,21 @@ from pred_model import PredictUsage
 
 # Declare instance for data processing
 dp = DataProc()
-dp.data
 
-# Dataset that Data augmentation is applied
-# X_train, X_test, y_train, y_test = dp.data_augmentation(save=True)
+# Data augmentation: first run
+# X_train, X_test, y_train, y_test = dp.data_augmentation(save=False)
 # dp.view_figure(dp.augmented_data, figure_type=0, save=True) 
-# dp.view_figure(dp.augmented_data, figure_type=0, save=False) 
+
+# Data augmentation: using existing file
 with open('data/augmented_data.pickle', 'rb') as file:
     X_train, X_test, y_train, y_test = pickle.load(file)
 
 # Declare instance for clustering
 cp = ClusterPattern(X_train)
 patterns = cp.data
-patterns
 
 # Dimension reduction
 data_arr = cp.dim_reduction('tsne')
-data_arr
 
 # Clustering electricity usage patterns
 pattern_labels = cp.clustering(data_arr, eps=6)
@@ -36,7 +34,6 @@ print(pattern_labels.value_counts())
 df_pattern = pd.DataFrame(cp.arr_tsne, columns=['x', 'y'])
 df_pattern['label'] = list(pattern_labels.label)
 dp.view_figure(df_pattern, figure_type=1, save=True) 
-dp.view_figure(df_pattern, figure_type=1, save=False) 
 
 # Classify patterns(train data) by label
 trainset_by_label = dp.clf_by_label(y_train, X_train, pattern_labels)
@@ -63,7 +60,6 @@ fold_accuracy, mean_accuracy = cl.valdiation()
 cl.fit()
 pred_labels = cl.predict()
 pred_labels = pd.DataFrame({'label':pred_labels}, index=X_test.index)
-pred_labels
 
 # Classify patterns(train data) by label
 testset_by_label = dp.clf_by_label(y_test, X_test, pred_labels)
@@ -98,7 +94,6 @@ pred_result = pd.DataFrame()
 for result in result_by_label:
     pred_result = pd.concat([pred_result, result])
 pred_result.sort_index()
-pred_result
 
 # Calcuate error of entire prediction
 error = model.calculate_error(pred_result.true, pred_result.pred)
